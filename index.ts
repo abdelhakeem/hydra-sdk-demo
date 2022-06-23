@@ -5,11 +5,14 @@ import {
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import { FanoutClient, MembershipModel } from "@glasseaters/hydra-sdk";
-import { NodeWallet } from "@metaplex/js";
+import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
 
 (async () => {
   const authorityWallet = Keypair.generate();
   const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+  const metaplex = new Metaplex(connection);
+  metaplex.use(keypairIdentity(authorityWallet));
 
   const signature = await connection.requestAirdrop(
     authorityWallet.publicKey,
@@ -23,7 +26,7 @@ import { NodeWallet } from "@metaplex/js";
 
   const fanoutClient = new FanoutClient(
     connection,
-    new NodeWallet(authorityWallet)
+    metaplex.identity()
   );
 
   const { fanout, nativeAccount } = await fanoutClient.initializeFanout({
